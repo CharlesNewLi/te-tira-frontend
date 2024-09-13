@@ -147,8 +147,7 @@
 
   .logged-in-user {
     color: white !important;
-    font-size: 12px;
-    font-family: 'Julius Sans One', sans-serif;
+    font-size: 18px;
   }
 
   .user-auth {

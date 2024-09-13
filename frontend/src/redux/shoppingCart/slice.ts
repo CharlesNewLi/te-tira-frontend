@@ -11,6 +11,7 @@ interface CartItem {
   checkInDate: string;
   roomTypeId: string;
   pricePerNight: number;
+  itemKey: string;
 }
 
 interface ShoppingCartState {
@@ -25,7 +26,7 @@ const initialState: ShoppingCartState = {
   error: null,
 };
 
-// 更新 getShoppingCart async thunk
+// 获取购物车条目的 getShoppingCart async thunk
 export const getShoppingCart = createAsyncThunk(
   "shoppingCart/getShoppingCart",
   async (jwt: string, thunkAPI) => {
@@ -70,21 +71,21 @@ export const addShoppingCartItem = createAsyncThunk(
   }
 );
 
+// 基于 ItemKey 清除购物车条目的 async thunk
 export const clearShoppingCartItem = createAsyncThunk(
   "shoppingCart/clearShoppingCartItem",
-  async (parameters: { jwt: string; keys: string[] }, thunkAPI) => {
+  async (parameters: { jwt: string; itemKey: string }, thunkAPI) => {
     try {
       const response = await axios.post(
         `http://127.0.0.1:3000/cart/remove`, // 使用 POST 方法和路径 /cart/remove
-        { keys: parameters.keys }, // 请求体中包含要删除的 keys 数组
+        { itemKey: parameters.itemKey }, // 请求体中包含要删除的 itemKey
         {
           headers: {
             Authorization: `bearer ${parameters.jwt}`,
           },
         }
       );
-
-      return parameters.keys; // 将 keys 返回以便在 fulfilled 中使用
+      return parameters.itemKey; // 将 itemKey 返回以便在 fulfilled 中使用
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data);
     }
@@ -164,9 +165,9 @@ export const shoppingCartSlice = createSlice({
       .addCase(clearShoppingCartItem.pending, (state) => {
         state.loading = true;
       })
-      .addCase(clearShoppingCartItem.fulfilled, (state, action: PayloadAction<string[]>) => {
-        const keysToRemove = action.payload; // 直接从 payload 中获取 keys
-        state.items = state.items.filter((item, index) => !keysToRemove.includes(`${item.roomTypeId}-${index}`)); // 根据 keys 过滤
+      .addCase(clearShoppingCartItem.fulfilled, (state, action: PayloadAction<string>) => {
+        const keyToRemove = action.payload; // 从 payload 中获取单个 itemKey
+        state.items = state.items.filter((item) => item.itemKey !== keyToRemove); // 根据 itemKey 过滤
         state.loading = false;
         state.error = null;
       })

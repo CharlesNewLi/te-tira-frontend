@@ -8,7 +8,7 @@ import { booking } from "../../redux/booking/slice";
 import { useLocation } from "react-router-dom";
 
 interface Product {
-  key: string;
+  itemKey: string;
   RoomTypeName: string;
   roomTypeId: string;
   price: number;
@@ -31,7 +31,13 @@ export const BookingPage: React.FC = () => {
   const location = useLocation();
 
   // 获取从ShoppingCart页面传递过来的购物车信息
-  const [products, setProducts] = useState<Product[]>(location.state?.products || []);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const initialProducts = location.state?.products || [];
+    return initialProducts.map((product) => ({
+      ...product,
+      itemKey: product.itemKey || `${product.roomTypeId}-${product.checkInDate}`, // 生成 itemKey
+    }));
+  });
 
   // 计算总金额
   const totalPrice = products.reduce((total, item) => total + item.price, 0);

@@ -8,7 +8,7 @@ import hotel1 from "../../assets/images/hotel_1.jpg";
 const { Text } = Typography;
 
 export interface Product {
-  key: string;
+  itemKey: string;
   RoomTypeName: string; // 房间类型名称
   roomTypeId: string; // 房间类型ID
   HotelName: string; // 酒店名称
@@ -31,7 +31,7 @@ interface PropsType {
     totalCount: number;
   };
   onPageChange?: (nextPage: number, pageSize: number) => void;
-  onDelete?: (roomTypeId: string) => void; // 新增 onDelete prop，用于删除条目
+  onDelete?: (itemKey: string) => void; 
 }
 
 const convertRating = (rating: string | number): number => {
@@ -54,7 +54,7 @@ const convertRating = (rating: string | number): number => {
 
 const listData = (productList: Product[]) =>
   productList.map((p) => ({
-    key: p.key,
+    key: p.itemKey,
     id: p.roomTypeId,
     title: `${p.RoomTypeName}`, // 显示房间类型名称，酒店名称和城市名称
     description: `Check-in: ${p.checkInDate}, Check-out: ${p.checkOutDate}, Nights: ${p.nights}`, // 显示预定时间段和时长

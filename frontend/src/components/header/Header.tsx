@@ -12,10 +12,6 @@ import { changeLanguage } from "../../redux/language/slice";
 import { authSlice } from "../../redux/auth/slice";
 import { getShoppingCart } from "../../redux/shoppingCart/slice";
 
-interface JwtPayload extends DefaultJwtPayload {
-  userId: string;
-}
-
 export const Header: React.FC = () => {
   const [visibleDropdown, setVisibleDropdown] = useState<string | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<string>("NZD");
@@ -27,17 +23,13 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
 
   const jwt = useSelector((s) => s.user.token);
+  const email = useSelector((s) => s.user.email);
   const [username, setUsername] = useState("");
+ 
 
   const shoppingCartItems = useSelector((state) => state.shoppingCart.items);
   const shoppingCartLoading = useSelector((state) => state.shoppingCart.loading);
 
-  useEffect(() => {
-    if (jwt) {
-      const token = jwt_decode<JwtPayload>(jwt);
-      setUsername(token.userId);
-    }
-  }, [jwt]);
 
   const handleIconClick = (type: string, e?: any) => {
     if (type === "language" && e) {
@@ -124,7 +116,7 @@ export const Header: React.FC = () => {
               </Spin>
             </Col>
             <Col>
-              <Typography.Text className={styles["logged-in-user"]}>{username}</Typography.Text>
+              <Typography.Text className={styles["logged-in-user"]}>{email}</Typography.Text>
             </Col>
             <Col>
               <Button className={styles["auth-btn"]} onClick={onLogout}>{t("header.logout")}</Button>

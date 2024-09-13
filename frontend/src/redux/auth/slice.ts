@@ -5,12 +5,14 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   token: string | null;
+  email: string | null;
 }
 
 const initialState: AuthState = {
   loading: false,
   error: null,
   token: null,
+  email: null,
 };
 
 export const logIn = createAsyncThunk(
@@ -26,7 +28,7 @@ export const logIn = createAsyncThunk(
       email: paramaters.email,
       password: paramaters.password,
     });
-    return data.token;
+    return { token: data.token, email: data.email };
   }
 );
 
@@ -36,6 +38,7 @@ export const authSlice = createSlice({
   reducers: {
     logOut: (state) => {
       state.token = null;
+      state.email = null;
       state.error = null;
       state.loading = false;
     },
@@ -45,7 +48,8 @@ export const authSlice = createSlice({
       state.loading = true;
     },
     [logIn.fulfilled.type]: (state, action) => {
-      state.token = action.payload;
+      state.token = action.payload.token;
+      state.email = action.payload.email;
       state.loading = false;
       state.error = null;
     },

@@ -17,10 +17,11 @@ interface CartItem {
   checkInDate: string;
   roomTypeId: string;
   pricePerNight: number;
+  itemKey: string;
 }
 
 interface Product {
-  key: string;
+  itemKey: string;
   RoomTypeName: string;
   roomTypeId: string;
   price: number;
@@ -102,7 +103,7 @@ export const ShoppingCartPage: React.FC = () => {
     const hotel = productDetails[item.hotelId] || {};
 
     return {
-      key: `${item.roomTypeId}-${index}`,
+      itemKey: item.itemKey || `${item.roomTypeId}-${item.checkInDate}`,
       RoomTypeName: item.roomTypeName,
       roomTypeId: item.roomTypeId,
       price: item.totalPrice,
@@ -117,6 +118,8 @@ export const ShoppingCartPage: React.FC = () => {
       Attractions: hotel.Attractions || '',
     };
   });
+
+  const isCartEmpty = mergedShoppingCartData.length === 0;
 
   const handleCheckout = async () => {
     if (shoppingCartItems.length <= 0) {
@@ -136,13 +139,23 @@ export const ShoppingCartPage: React.FC = () => {
     }
   };
 
-  // 更新Clear逻辑
-  const handleClearCart = async () => {
+  // 更新 Clear 逻辑以使用单个 itemKey
+  const handleDeleteItem = async (itemKey: string) => {
     try {
-      await dispatch(checkout(jwt)).unwrap();
+      await dispatch(clearShoppingCartItem({ jwt, itemKey })).unwrap(); // 传递单个 itemKey
       await dispatch(getShoppingCart(jwt));
     } catch (error) {
-      console.error("Clear cart failed:", error);
+      console.error("Failed to remove item:", error);
+    }
+  };
+
+  const handleClearCart = async () => {
+    try {
+      // 清空购物车的逻辑，这里可以使用 checkout 或调用后端的清空接口
+      await dispatch(checkout(jwt)).unwrap(); // 假设清空购物车也通过 checkout 完成
+      await dispatch(getShoppingCart(jwt)); // 重新获取购物车状态，确保清空后购物车状态更新
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
     }
   };
 
@@ -152,20 +165,15 @@ export const ShoppingCartPage: React.FC = () => {
         {/* 购物车清单 */}
         <Col span={16}>
           <div className={styles["product-list-container"]}>
-            {mergedShoppingCartData.length > 0 ? (
-              <ProductList
-                data={mergedShoppingCartData}
-                onDelete={(key) => {
-                  dispatch(clearShoppingCartItem({
-                    jwt,
-                    keys: [key]
-                  }));
-                }}
-              />
-            ) : (
-              <div>No products in the shopping cart.</div>  // 当购物车为空时，显示占位文本
-            )}
-          </div>
+              {!isCartEmpty ? (
+                <ProductList
+                  data={mergedShoppingCartData}
+                  onDelete={handleDeleteItem} // 传递单个 itemKey 给 handleDeleteItem
+                />
+              ) : (
+                <div>No products in the shopping cart.</div>  // 当购物车为空时，显示占位文本
+              )}
+            </div>
         </Col>
         {/* 支付卡组件 */}
         <Col span={8}>
